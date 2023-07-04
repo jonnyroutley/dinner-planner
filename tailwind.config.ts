@@ -4,6 +4,9 @@ export default {
   content: ["./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {},
+    fontFamily: {
+      'mono': ['Azeret Mono', 'monospace']
+    }
   },
   plugins: [],
 } satisfies Config;
