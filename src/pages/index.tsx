@@ -3,21 +3,9 @@ import Head from "next/head";
 import Link from "next/link";
 import { api } from "~/utils/api";
 import { useState, useEffect } from "react";
+import Loading from "./loading";
 
 export default function Home() {
-  // interface Day {
-  //   [key: string]: string
-  // }
-  // const days: Day = {
-  //   Monday: "James",
-  //   Tuesday: "Jess",
-  //   Wednesday: "Jonny",
-  //   Thursday: "Mum",
-  //   Friday: "Mum",
-  //   Saturday: "Jess",
-  //   Sunday: "James",
-  // }
-
   const days = [
     "Monday",
     "Tuesday",
@@ -27,33 +15,8 @@ export default function Home() {
     "Saturday",
     "Sunday",
   ];
-  const allPeople = [
-    ["Dad", "James"],
-    ["Dad", "James", "Jess"],
-    [
-      "Dad",
-      "James",
-      "Jess",
-      "Jonny",
-      "Alina",
-      "Mum",
-      "Anna",
-      "Rosie",
-      "Jake",
-      "Wei Han",
-    ],
-    ["Dad", "James", "Jess", "Jonny", "Alina"],
-    ["Dad", "James", "Jess", "Jonny", "Alina", "Mum", "Anna"],
-    ["Dad"],
-    ["Dad", "James", "Jess", "Jonny"],
-  ];
 
-  const cooks = ["Mum", "Jonny", "Jess", "Mum", "Jonny", "Jess", "Mum"];
-
-  const times = ["19:00", "18:00", "18:30", "19:00", "20:00", "19:30", "19:00"];
-
-  const user = "Jonny";
-
+  // get data from API
   // const hello = api.example.hello.useQuery({ text: "from tRPC" });
 
   // const [editing, setEditing] = useState(false);
@@ -67,6 +30,20 @@ export default function Home() {
     setIsFirstWeek(!isFirstWeek);
   };
 
+  const dateToString = (date: Date) => {
+    console.log(date)
+    let datestr = date.getDate() + "/" + (date.getMonth()+1);
+    return datestr;
+  };
+
+  const { data, isLoading } = api.dinners.getFortnight.useQuery();
+
+  if (isLoading) return <Loading />;
+  if (!data) {
+    return <div>Something went wrong...</div>;
+  }
+  console.log(data);
+
   return (
     <>
       <Head>
@@ -76,7 +53,7 @@ export default function Home() {
       </Head>
       <main className="flex min-h-screen flex-col gap-4 bg-zinc-100 p-2 font-mono md:px-8 md:py-4">
         <div className="flex flex-row items-end justify-between">
-          <h1 className="text-5xl font-bold text-zinc-800">Dinner Plan</h1>
+          <h1 className="text-5xl font-bold text-zinc-800">In For Din?</h1>
           <div className="flex flex-row items-center gap-4">
             <div>
               {isFirstWeek ? (
@@ -96,7 +73,9 @@ export default function Home() {
               )}
             </div>
             <Link href="/edit">
-              <div className="rounded-lg bg-zinc-200 p-4 shadow-md hover:bg-zinc-400">Edit</div>
+              <div className="rounded-lg bg-zinc-200 p-4 shadow-md hover:bg-zinc-400">
+                Edit
+              </div>
             </Link>
 
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xl font-bold shadow-md">
@@ -106,17 +85,17 @@ export default function Home() {
         </div>
         <div className="grow rounded-xl bg-zinc-800 p-4 shadow-lg md:p-8">
           <div className="grid grid-cols-7 gap-[2px] md:gap-4">
-            {days.map((day, key) => (
+            {data.map((dinner, key) => (
               <div className="rounded-sm bg-zinc-100 p-2 md:rounded-lg">
                 <h1 className="text-center text-4xl font-bold text-orange-600 ">
-                  {day.slice(0, 1)}
+                  {dinner.name.slice(0, 1)}
                 </h1>
                 <p className="text-center text-xs text-zinc-600">
-                  {23 + key}/07
+                  {dateToString(dinner.date)}
                 </p>
                 <div className="flex h-72 flex-col justify-between gap-2">
                   <div className="no-scrollbar mt-2 flex max-h-full flex-row flex-wrap items-center justify-center gap-2 overflow-y-scroll py-2 shadow-inner">
-                    {allPeople[key].map((person: string) => (
+                    {dinner.userIDs.map((person: string) => (
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-100 shadow-md md:h-14 md:w-14">
                         {person}
                       </div>
@@ -124,49 +103,28 @@ export default function Home() {
                   </div>
                   <div className="">
                     <p className="text-center text-orange-600">
-                      {allPeople[key].length}
+                      {dinner.userIDs.length}
                     </p>
                   </div>
                 </div>
               </div>
             ))}
-            {times.map((time) => (
+            {data.map((dinner) => (
               <div className="m-auto text-lg font-semibold text-zinc-100">
-                {time}
+                {dinner.time}
               </div>
             ))}
-            {cooks.map((cook) => (
+
+            {/* {dinner.time.map((time) => (
+            ))} */}
+            {/* {cooks.map((cook) => (
               <div className="m-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xs font-semibold text-zinc-100">
                 {cook}
               </div>
-            ))}
+            ))} */}
           </div>
         </div>
       </main>
     </>
   );
 }
-
-// function AuthShowcase() {
-//   const { data: sessionData } = useSession();
-
-//   const { data: secretMessage } = api.example.getSecretMessage.useQuery(
-//     undefined, // no input
-//     { enabled: sessionData?.user !== undefined }
-//   );
-
-//   return (
-//     <div className="flex flex-col items-center justify-center gap-4">
-//       <p className="text-center text-2xl text-white">
-//         {sessionData && <span>Logged in as {sessionData.user?.name}</span>}
-//         {secretMessage && <span> - {secretMessage}</span>}
-//       </p>
-//       <button
-//         className="rounded-full bg-white/10 px-10 py-3 font-semibold text-white no-underline transition hover:bg-white/20"
-//         onClick={sessionData ? () => void signOut() : () => void signIn()}
-//       >
-//         {sessionData ? "Sign out" : "Sign in"}
-//       </button>
-//     </div>
-//   );
-// }
