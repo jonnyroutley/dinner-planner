@@ -20,12 +20,14 @@ async function main() {
   // //   })
   // // }
 
-  // const dinner = await prisma.dinner.create({
-  //   data: {
-  //     date: new Date(Date.UTC(2023, 7, 24)),
-  //     name: 'Monday',
-  //   },
-  // })
+  const dinner = await prisma.dinner.create({
+    data: {
+      date: new Date(Date.UTC(2023, 7, 24)),
+      name: 'Monday',
+      time: '17:00',
+      
+    },
+  })
 
   // console.log(dinner)
 
@@ -35,12 +37,12 @@ async function main() {
   // })
 
   // console.log(updateDinner)
-  const dinners = await prisma.dinner.updateMany({
-    data: {
-      userIDs: '64bea046e8dcc972100063f8'
-    }
-  })
-  console.log(dinners)
+  // const dinners = await prisma.dinner.updateMany({
+  //   data: {
+  //     userIDs: '64bea046e8dcc972100063f8'
+  //   }
+  // })
+  // console.log(dinners)
 
 
   // const user = await prisma.user.create({

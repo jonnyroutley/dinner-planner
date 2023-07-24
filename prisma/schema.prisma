@@ -65,11 +65,13 @@ model Dinner {
     date      DateTime
     name      String
     userIDs   String[] @db.ObjectId
+    userNames String[] @db.ObjectId
     users     User[]   @relation(fields: [userIDs], references: [id])
     time      String
     // recipe    Recipe   @relation(fields: [recipeId], references: [id])
     // recipeId  String   @db.ObjectId
 }
+
 
 // model WeekPlan {
 //     id        String   @id @default(auto()) @map("_id") @db.ObjectId

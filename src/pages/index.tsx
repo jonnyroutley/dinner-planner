@@ -4,6 +4,8 @@ import Link from "next/link";
 import { api } from "~/utils/api";
 import { useState, useEffect } from "react";
 import Loading from "./loading";
+import type { User } from "@prisma/client";
+import { MouseEvent } from "react";
 
 export default function Home() {
   const days = [
@@ -24,20 +26,45 @@ export default function Home() {
   // const toggleEditing = () => {
   //   setEditing(!editing);
   // };
+  const username = "Jonny";
 
+  const { data: session } = useSession();
+
+  console.log(session)
+  
   const [isFirstWeek, setIsFirstWeek] = useState(true);
   const toggleIsFirstWeek = () => {
     setIsFirstWeek(!isFirstWeek);
   };
 
-  const dateToString = (date: Date) => {
-    console.log(date)
-    let datestr = date.getDate() + "/" + (date.getMonth()+1);
-    return datestr;
+  const userAttending = (arr: Array<User>, name: String) => {
+    return arr.some(function (el: User) {
+      return el.name === name;
+    });
   };
 
-  const { data, isLoading } = api.dinners.getFortnight.useQuery();
+  const toggleAttendance = (e: MouseEvent) => {
+    e.preventDefault();
+    alert("clicked");
+  };
 
+  const dateToString = (date: Date) => {
+    // console.log(date)
+    let datestr = date.getDate() + "/" + (date.getMonth() + 1);
+    return datestr;
+  };
+  
+  const { data, isLoading } = api.dinner.getFortnight.useQuery();
+  // const { users, isLoading } = api.user.getAll.useQuery();
+  
+  if (!session) {
+    return (
+      <div className="flex flex-col h-screen w-screen items-center justify-center">
+        <button onClick={() => signIn()} className="hover:text-zinc-600 text-2xl">Sign In</button>
+      </div>
+    );
+  }
+  
   if (isLoading) return <Loading />;
   if (!data) {
     return <div>Something went wrong...</div>;
@@ -95,16 +122,23 @@ export default function Home() {
                 </p>
                 <div className="flex h-72 flex-col justify-between gap-2">
                   <div className="no-scrollbar mt-2 flex max-h-full flex-row flex-wrap items-center justify-center gap-2 overflow-y-scroll py-2 shadow-inner">
-                    {dinner.userIDs.map((person: string) => (
+                    {dinner.users.map((user) => (
                       <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-100 shadow-md md:h-14 md:w-14">
-                        {person}
+                        {user.name}
                       </div>
                     ))}
                   </div>
-                  <div className="">
+                  <div className="flex flex-row justify-between">
                     <p className="text-center text-orange-600">
-                      {dinner.userIDs.length}
+                      {dinner.users.length}
                     </p>
+                    <button
+                      type="button"
+                      onClick={(e) => toggleAttendance(e)}
+                      className="h-6 w-6 rounded-md bg-zinc-400 hover:bg-zinc-600"
+                    >
+                      {userAttending(dinner.users, username) ? "-" : "+"}
+                    </button>
                   </div>
                 </div>
               </div>
