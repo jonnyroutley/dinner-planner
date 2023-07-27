@@ -51,7 +51,7 @@ export const dinnerRouter = createTRPCRouter({
         },
         data: {
           users: {
-            connect: { email: ctx.session.user.email },
+            connect: { id: ctx.session.user.id },
           },
         },
       });
@@ -71,7 +71,7 @@ export const dinnerRouter = createTRPCRouter({
         },
         data: {
           cook: {
-            connect: { email: ctx.session.user.email },
+            connect: { id: ctx.session.user.id },
           },
         },
       });
