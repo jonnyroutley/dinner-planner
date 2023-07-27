@@ -1,6 +1,5 @@
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 import Head from "next/head";
-import Link from "next/link";
 import { api } from "~/utils/api";
 import { useState, useEffect } from "react";
 import Loading from "./loading";
@@ -8,44 +7,39 @@ import type { User } from "@prisma/client";
 import { MouseEvent } from "react";
 
 export default function Home() {
-  const days = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-  ];
-
-  // get data from API
-  // const hello = api.example.hello.useQuery({ text: "from tRPC" });
-
-  // const [editing, setEditing] = useState(false);
-
-  // const toggleEditing = () => {
-  //   setEditing(!editing);
-  // };
-  const username = "Jonny";
-
   const { data: session } = useSession();
 
-  console.log(session)
-  
   const [isFirstWeek, setIsFirstWeek] = useState(true);
   const toggleIsFirstWeek = () => {
     setIsFirstWeek(!isFirstWeek);
   };
 
-  const userAttending = (arr: Array<User>, name: String) => {
-    return arr.some(function (el: User) {
-      return el.name === name;
-    });
+  const toggleAttendance = async (
+    e: MouseEvent,
+    dinnerId: string,
+    attending: boolean
+  ) => {
+    e.preventDefault();
+    // alert("clicked");
+    if (attending) {
+      removeAttendance.mutate({ dinnerId });
+      // data![key]!.users = data![key]!.users.filter((user) => user.name != username);
+    } else {
+      addAttendance.mutate({ dinnerId });
+    }
   };
 
-  const toggleAttendance = (e: MouseEvent) => {
+  const toggleCooking = async (
+    e: MouseEvent,
+    dinnerId: string,
+    cooking: boolean
+  ) => {
     e.preventDefault();
-    alert("clicked");
+    if (cooking) {
+      removeCooking.mutate({ dinnerId });
+    } else {
+      setCooking.mutate({ dinnerId });
+    }
   };
 
   const dateToString = (date: Date) => {
@@ -53,23 +47,75 @@ export default function Home() {
     let datestr = date.getDate() + "/" + (date.getMonth() + 1);
     return datestr;
   };
-  
+
+  const nameFromId = (userId: string | null) => {
+    
+    const user = users?.find(el => el.id == userId)
+    
+    if (user) {
+      return user.name!.split(" ")[0]
+    }
+    return ""
+  }
+
+  const { data: users } = api.user.getAll.useQuery();
+  console.log(users)
   const { data, isLoading } = api.dinner.getFortnight.useQuery();
+  const utils = api.useContext();
+  const removeAttendance = api.dinner.removeAttendance.useMutation({
+    onSettled() {
+      // sync with server
+      utils.dinner.getFortnight.invalidate();
+    },
+  });
+  const addAttendance = api.dinner.addAttendance.useMutation({
+    onSettled() {
+      utils.dinner.getFortnight.invalidate();
+    },
+  });
   // const { users, isLoading } = api.user.getAll.useQuery();
-  
+
+  const setCooking = api.dinner.setCooking.useMutation({
+    onSettled() {
+      utils.dinner.getFortnight.invalidate();
+    },
+  });
+
+  const removeCooking = api.dinner.removeCooking.useMutation({
+    onSettled() {
+      utils.dinner.getFortnight.invalidate();
+    },
+  });
+
+  const userAttending = (arr: Array<User>) => {
+    return arr.some(function (el: User) {
+      return el.name === session!.user.name;
+    });
+  };
+
+  const userCooking = (cookUserId: string | null) => {
+    return cookUserId === session!.user.id;
+  };
+
+  if (isLoading) return <Loading />;
   if (!session) {
     return (
-      <div className="flex flex-col h-screen w-screen items-center justify-center">
-        <button onClick={() => signIn()} className="hover:text-zinc-600 text-2xl">Sign In</button>
+      <div className="flex h-screen w-screen flex-col items-center justify-center">
+        <button
+          onClick={() => signIn()}
+          className="text-2xl hover:text-zinc-600"
+          disabled={addAttendance.isLoading || removeAttendance.isLoading}
+          >
+          Sign In
+        </button>
       </div>
     );
   }
-  
-  if (isLoading) return <Loading />;
+
   if (!data) {
     return <div>Something went wrong...</div>;
   }
-  console.log(data);
+
 
   return (
     <>
@@ -99,11 +145,11 @@ export default function Home() {
                 </button>
               )}
             </div>
-            <Link href="/edit">
+            {/* <Link href="/edit">
               <div className="rounded-lg bg-zinc-200 p-4 shadow-md hover:bg-zinc-400">
                 Edit
               </div>
-            </Link>
+            </Link> */}
 
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xl font-bold shadow-md">
               J
@@ -113,7 +159,10 @@ export default function Home() {
         <div className="grow rounded-xl bg-zinc-800 p-4 shadow-lg md:p-8">
           <div className="grid grid-cols-7 gap-[2px] md:gap-4">
             {data.map((dinner, key) => (
-              <div className="rounded-sm bg-zinc-100 p-2 md:rounded-lg">
+              <div
+                key={key}
+                className="rounded-sm bg-zinc-100 p-2 md:rounded-lg"
+              >
                 <h1 className="text-center text-4xl font-bold text-orange-600 ">
                   {dinner.name.slice(0, 1)}
                 </h1>
@@ -123,8 +172,11 @@ export default function Home() {
                 <div className="flex h-72 flex-col justify-between gap-2">
                   <div className="no-scrollbar mt-2 flex max-h-full flex-row flex-wrap items-center justify-center gap-2 overflow-y-scroll py-2 shadow-inner">
                     {dinner.users.map((user) => (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-100 shadow-md md:h-14 md:w-14">
-                        {user.name}
+                      <div
+                        key={user.id}
+                        className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-100 shadow-md md:h-14 md:w-14"
+                      >
+                        {user.name != null && user.name.split(" ")[0]}
                       </div>
                     ))}
                   </div>
@@ -134,28 +186,48 @@ export default function Home() {
                     </p>
                     <button
                       type="button"
-                      onClick={(e) => toggleAttendance(e)}
+                      disabled={
+                        addAttendance.isLoading || removeAttendance.isLoading
+                      }
+                      onClick={(e) =>
+                        toggleAttendance(
+                          e,
+                          dinner.id,
+                          userAttending(dinner.users)
+                        )
+                      }
                       className="h-6 w-6 rounded-md bg-zinc-400 hover:bg-zinc-600"
                     >
-                      {userAttending(dinner.users, username) ? "-" : "+"}
+                      {userAttending(dinner.users) ? "-" : "+"}
                     </button>
                   </div>
                 </div>
               </div>
             ))}
             {data.map((dinner) => (
-              <div className="m-auto text-lg font-semibold text-zinc-100">
+              <div
+                key={dinner.id}
+                className="m-auto text-lg font-semibold text-zinc-100"
+              >
                 {dinner.time}
               </div>
             ))}
-
-            {/* {dinner.time.map((time) => (
-            ))} */}
-            {/* {cooks.map((cook) => (
-              <div className="m-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xs font-semibold text-zinc-100">
-                {cook}
+            {data.map((dinner, key) => (
+              <div className="flex flex-col items-center " key={key}>
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xs font-semibold text-zinc-100">
+                  {nameFromId(dinner.cookUserId)}
+                </div>
+                <button
+                  type="button"
+                  className="-my-4 h-6 w-6 rounded-md bg-zinc-400 hover:bg-zinc-600"
+                  onClick={(e) =>
+                    toggleCooking(e, dinner.id, userCooking(dinner.cookUserId))
+                  }
+                >
+                  {userCooking(dinner.cookUserId) ? "-" : "+"}
+                </button>
               </div>
-            ))} */}
+            ))}
           </div>
         </div>
       </main>

@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const userRouter = createTRPCRouter({
-    getAll: publicProcedure.query(({ ctx }) => {
+    getAll: protectedProcedure.query(({ ctx }) => {
         return ctx.prisma.user.findMany();
     })
 })  

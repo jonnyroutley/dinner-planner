@@ -49,29 +49,32 @@ model VerificationToken {
 
 model User {
     id            String    @id @default(auto()) @map("_id") @db.ObjectId
-    name          String?
-    email         String?   @unique
+    name          String
+    email         String    @unique
     emailVerified DateTime?
     image         String?
     accounts      Account[]
     sessions      Session[]
     dinnerIDs     String[]  @db.ObjectId
-    dinners       Dinner[]  @relation(fields: [dinnerIDs], references: [id])
+    dinners       Dinner[]  @relation(name: "attendees", fields: [dinnerIDs], references: [id])
+    cooking       Dinner[]  @relation(name: "cook")
+    cookingIDs    String[]  @db.ObjectId
 }
 
 model Dinner {
-    id        String   @id @default(auto()) @map("_id") @db.ObjectId
-    updatedAt DateTime @updatedAt
-    date      DateTime
-    name      String
-    userIDs   String[] @db.ObjectId
-    userNames String[] @db.ObjectId
-    users     User[]   @relation(fields: [userIDs], references: [id])
-    time      String
+    id         String   @id @default(auto()) @map("_id") @db.ObjectId
+    updatedAt  DateTime @updatedAt
+    date       DateTime
+    name       String
+    userIDs    String[] @db.ObjectId
+    userNames  String[] @db.ObjectId
+    users      User[]   @relation(name: "attendees", fields: [userIDs], references: [id])
+    time       String
+    cook       User?    @relation(name: "cook", fields: [cookUserId], references: [id])
+    cookUserId String?  @db.ObjectId
     // recipe    Recipe   @relation(fields: [recipeId], references: [id])
     // recipeId  String   @db.ObjectId
 }
-
 
 // model WeekPlan {
 //     id        String   @id @default(auto()) @map("_id") @db.ObjectId

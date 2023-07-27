@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 export const dinnerRouter = createTRPCRouter({
-  getFortnight: publicProcedure.query(({ ctx }) => {
+  getFortnight: protectedProcedure.query(({ ctx }) => {
     // return ctx.prisma.dinner.findMany();
     return ctx.prisma.dinner.findMany({
       where: {
@@ -17,7 +17,7 @@ export const dinnerRouter = createTRPCRouter({
     });
   }),
 
-  addAttendance: publicProcedure
+  removeAttendance: protectedProcedure
     .input(
       z.object({
         dinnerId: z.string(),
@@ -31,10 +31,69 @@ export const dinnerRouter = createTRPCRouter({
         },
         data: {
           users: {
-            disconnect: { id: ctx.session.user.userId },
+            disconnect: { email: ctx.session.user.email },
           },
         },
       });
     }),
-  // removeAttendance
+
+  addAttendance: protectedProcedure
+    .input(
+      z.object({
+        dinnerId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // const userId = ctx.userId
+      const res = await ctx.prisma.dinner.update({
+        where: {
+          id: input.dinnerId,
+        },
+        data: {
+          users: {
+            connect: { email: ctx.session.user.email },
+          },
+        },
+      });
+    }),
+
+  setCooking: protectedProcedure
+    .input(
+      z.object({
+        dinnerId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // const userId = ctx.userId
+      const res = await ctx.prisma.dinner.update({
+        where: {
+          id: input.dinnerId,
+        },
+        data: {
+          cook: {
+            connect: { email: ctx.session.user.email },
+          },
+        },
+      });
+    }),
+
+  removeCooking: protectedProcedure
+    .input(
+      z.object({
+        dinnerId: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      // const userId = ctx.userId
+      const res = await ctx.prisma.dinner.update({
+        where: {
+          id: input.dinnerId,
+        },
+        data: {
+          cook: {
+            disconnect: true,
+          },
+        },
+      });
+    }),
 });

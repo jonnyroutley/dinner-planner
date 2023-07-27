@@ -1,6 +1,6 @@
 export default function Loading() {
   return (
-    <div className="absolute top-0 right-0 flex h-screen w-screen items-center justify-center bg-zinc-900">
+    <div className="absolute top-0 right-0 flex h-screen w-screen items-center justify-center dark:bg-zinc-900">
       <div role="status">
         <svg
           aria-hidden="true"
