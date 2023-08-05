@@ -90,7 +90,7 @@ export default function Home() {
               )}
             </div>
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xl font-bold shadow-md">
-              {session.user.name.slice(0,1)}
+              {session.user.name!.slice(0,1)}
             </div>
           </div>
         </div>
