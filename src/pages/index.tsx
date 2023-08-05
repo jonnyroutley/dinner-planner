@@ -33,10 +33,13 @@ export default function Home() {
       // if (data.length > 0) {
       // console.log(data[data.length-1])
       // }
-      const finalDate = data.length > 0 ? data[data.length - 1]!.date : new Date(Date.now() - 86400000);
-      addMissingDates.mutate({finalDate, numMissing})
+      const finalDate =
+        data.length > 0
+          ? data[data.length - 1]!.date
+          : new Date(Date.now() - 86400000);
+      addMissingDates.mutate({ finalDate, numMissing });
     } else if (data && data.length > 14) {
-      alert('Duplicate data - tell Jonny!')
+      alert("Duplicate data - tell Jonny!");
     }
   }, [data]);
 
@@ -67,6 +70,24 @@ export default function Home() {
         <title>In For Din?</title>
         <meta name="description" content="Did you eat?" />
         <link rel="icon" href="/favicon.ico" />
+        <link
+          rel="apple-touch-icon"
+          sizes="180x180"
+          href="/apple-touch-icon.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="/favicon-32x32.png"
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="/favicon-16x16.png"
+        />
+        <link rel="manifest" href="/site.webmanifest" />
       </Head>
       <main className="flex min-h-screen flex-col gap-4 bg-zinc-100 p-2 font-mono md:px-8 md:py-4">
         <div className="flex flex-row items-end justify-between">
@@ -90,16 +111,19 @@ export default function Home() {
               )}
             </div>
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xl font-bold shadow-md">
-              {session.user.name!.slice(0,1)}
+              {session.user.name!.slice(0, 1)}
             </div>
           </div>
         </div>
-        {isFirstWeek ? 
-        <WeekViewer data={data.slice(0,7)} users={users} session={session}/> 
-        : <WeekViewer data={data.slice(7,14)} users={users} session={session}/> }
-        
-
-        
+        {isFirstWeek ? (
+          <WeekViewer data={data.slice(0, 7)} users={users} session={session} />
+        ) : (
+          <WeekViewer
+            data={data.slice(7, 14)}
+            users={users}
+            session={session}
+          />
+        )}
       </main>
     </>
   );
