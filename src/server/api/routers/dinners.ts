@@ -1,14 +1,18 @@
 import { z } from "zod";
-import { createTRPCRouter, protectedProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure, publicProcedure } from "../trpc";
 
 export const dinnerRouter = createTRPCRouter({
   getFortnight: protectedProcedure.query(({ ctx }) => {
+    const today = new Date();
+    today.setUTCHours(0,0,0,0)
+    const todayPlusTwoWeeks = new Date(Date.now() + 12096e5);
+    console.log(today, todayPlusTwoWeeks)
     // return ctx.prisma.dinner.findMany();
     return ctx.prisma.dinner.findMany({
       where: {
         date: {
-          lte: new Date("2023-08-31"),
-          gte: new Date("2023-08-24"),
+          gte: today,
+          lte: todayPlusTwoWeeks,
         },
       },
       include: {
@@ -95,5 +99,43 @@ export const dinnerRouter = createTRPCRouter({
           },
         },
       });
+    }),
+
+  addMissingDates: publicProcedure
+    .input(
+      z.object({
+        finalDate: z.date(),
+        numMissing: z.number(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      console.log('made it')
+      let days = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
+
+      const nextDate = new Date();
+      nextDate.setUTCDate(input.finalDate.getUTCDate());
+      nextDate.setUTCHours(0,0,0,0)
+
+      for (let i = 0; i < input.numMissing; i++) {
+        nextDate.setUTCDate(nextDate.getUTCDate() + 1);
+        const dinner = await ctx.prisma.dinner.create({
+          data: {
+            date: nextDate,
+            name: days[nextDate.getDay()]!,
+            time: "19:00",
+          },
+        });
+        console.log('here', i)
+        console.log(dinner)
+ 
+      }
     }),
 });
