@@ -150,14 +150,19 @@ export const WeekViewer: FC<weekViewerProps> = ({ data, users, session }) => {
             className="m-auto flex flex-row items-center gap-2 text-sm font-semibold tracking-tighter text-zinc-100 md:text-lg"
           >
             {/* {dinner.time} */}
-            <TimePicker id={dinner.id} time={dinner.time}/>
+            <TimePicker id={dinner.id} time={dinner.time} />
           </div>
         ))}
         {data.map((dinner, key) => (
           <div className="flex flex-col items-center " key={key}>
-            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-orange-600 text-sm font-semibold text-zinc-100 md:h-14 md:w-14 md:text-base">
+            <div
+              className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-orange-600 text-sm font-semibold text-zinc-100 md:h-14 md:w-14 md:text-base"
+              data-tooltip-content={nameFromId(dinner.cookUserId, false)}
+              data-tooltip-id={`chef-name-${key}`}
+            >
               {nameFromId(dinner.cookUserId)}
             </div>
+            <Tooltip id={`chef-name-${key}`} />
             <button
               type="button"
               className="-my-3 h-5 w-5 rounded-md bg-zinc-400 text-sm hover:bg-zinc-600 md:h-6 md:w-6 md:text-base"
