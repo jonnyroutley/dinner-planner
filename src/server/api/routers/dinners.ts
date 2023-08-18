@@ -138,4 +138,22 @@ export const dinnerRouter = createTRPCRouter({
  
       }
     }),
+
+  updateTime: publicProcedure
+    .input(
+      z.object({
+        dinnerId: z.string(),
+        newTime: z.string().regex(new RegExp(/^(?:[01]\d|2[0-3]):[0-5]\d$/))
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const res = await ctx.prisma.dinner.update({
+        where: {
+          id: input.dinnerId
+        },
+        data: {
+          time: input.newTime
+        }
+      })
+    })
 });

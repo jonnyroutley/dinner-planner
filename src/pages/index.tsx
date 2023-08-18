@@ -91,26 +91,26 @@ export default function Home() {
       </Head>
       <main className="flex min-h-screen flex-col gap-4 bg-zinc-100 p-2 font-mono md:px-8 md:py-4">
         <div className="flex flex-row items-end justify-between">
-          <h1 className="text-5xl font-bold text-zinc-800">In For Din?</h1>
+          <h1 className="text-5xl font-bold text-zinc-800 ">In For Din?</h1>
           <div className="flex flex-row items-center gap-4">
             <div>
               {isFirstWeek ? (
                 <button
-                  className="rounded-lg bg-zinc-200 p-4 shadow-md hover:bg-zinc-400"
+                  className="rounded-lg bg-zinc-200 p-2 md:p-4 shadow-md hover:bg-zinc-400"
                   onClick={toggleIsFirstWeek}
                 >
                   Week 1
                 </button>
               ) : (
                 <button
-                  className="rounded-lg bg-orange-200 p-4 shadow-md hover:bg-orange-400 "
+                  className="rounded-lg bg-zinc-400 p-2 md:p-4 shadow-md hover:bg-zinc-200 "
                   onClick={toggleIsFirstWeek}
                 >
                   Week 2
                 </button>
               )}
             </div>
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xl font-bold shadow-md">
+            <div className="flex h-10 w-10 md:h-14 md:w-14 shrink-0 items-center justify-center rounded-full bg-orange-600 text-xl font-bold shadow-md">
               {session.user.name!.slice(0, 1)}
             </div>
           </div>

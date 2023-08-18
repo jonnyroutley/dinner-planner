@@ -10,7 +10,11 @@
     "start": "next start"
   },
   "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
     "@fontsource/azeret-mono": "^5.0.3",
+    "@mui/icons-material": "^5.14.3",
+    "@mui/material": "^5.14.5",
     "@next-auth/prisma-adapter": "^1.0.5",
     "@prisma/client": "^5.0.0",
     "@t3-oss/env-nextjs": "^0.3.1",
@@ -23,6 +27,7 @@
     "next-auth": "^4.22.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-tooltip": "^5.21.1",
     "superjson": "1.12.2",
     "zod": "^3.21.4"
   },

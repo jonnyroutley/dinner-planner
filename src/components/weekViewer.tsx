@@ -2,8 +2,10 @@ import React, { FC } from "react";
 import type { Dinner, User } from "@prisma/client";
 import { api } from "~/utils/api";
 import type { Session } from "next-auth";
+import { Tooltip } from "react-tooltip";
+import TimePicker from "./timePicker";
 
-type weekViewerProps = { data: Dinner[], users: User[], session: Session};
+type weekViewerProps = { data: Dinner[]; users: User[]; session: Session };
 
 export const WeekViewer: FC<weekViewerProps> = ({ data, users, session }) => {
   const dateToString = (date: Date) => {
@@ -12,11 +14,17 @@ export const WeekViewer: FC<weekViewerProps> = ({ data, users, session }) => {
     return datestr;
   };
 
-  const nameFromId = (userId: string | null) => {
+  const nameFromId = (userId: string | null, initialsOnly = true) => {
     const user = users.find((el) => el.id == userId);
 
     if (user) {
-      return user.name!.split(" ")[0];
+      if (initialsOnly) {
+        return user.name
+          .split(" ")
+          .map((name) => name[0])
+          .join("");
+      }
+      return user.name;
     }
     return "";
   };
@@ -86,7 +94,7 @@ export const WeekViewer: FC<weekViewerProps> = ({ data, users, session }) => {
   };
 
   return (
-    <div className="grow rounded-xl bg-zinc-800 p-4 shadow-lg md:p-8">
+    <div className=" rounded-xl bg-zinc-800 px-4 py-6 shadow-lg md:p-8">
       <div className="grid grid-cols-7 gap-[2px] md:gap-4">
         {data.map((dinner, key) => (
           <div key={key} className="rounded-sm bg-zinc-100 p-2 md:rounded-lg">
@@ -99,15 +107,20 @@ export const WeekViewer: FC<weekViewerProps> = ({ data, users, session }) => {
             <div className="flex h-72 flex-col justify-between gap-2">
               <div className="no-scrollbar mt-2 flex max-h-full flex-row flex-wrap items-center justify-center gap-2 overflow-y-scroll py-2 shadow-inner">
                 {dinner.userIDs.map((userId) => (
-                  <div
-                    key={userId}
-                    className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-800 text-xs font-semibold text-zinc-100 shadow-md md:h-14 md:w-14"
-                  >
-                    {nameFromId(userId)}
-                  </div>
+                  <>
+                    <div
+                      key={userId}
+                      className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 text-sm font-semibold text-zinc-100 shadow-md md:h-14 md:w-14 md:text-base"
+                      data-tooltip-content={nameFromId(userId, false)}
+                      data-tooltip-id={`attendee-name-${key}`}
+                    >
+                      {nameFromId(userId)}
+                    </div>
+                    <Tooltip id={`attendee-name-${key}`} />
+                  </>
                 ))}
               </div>
-              <div className="flex flex-row justify-between">
+              <div className="flex flex-col items-center md:flex-row md:items-end md:justify-between">
                 <p className="text-center text-orange-600">
                   {dinner.userIDs.length}
                 </p>
@@ -117,9 +130,13 @@ export const WeekViewer: FC<weekViewerProps> = ({ data, users, session }) => {
                     addAttendance.isLoading || removeAttendance.isLoading
                   }
                   onClick={(e) =>
-                    toggleAttendance(e, dinner.id, userAttending(dinner.userIDs))
+                    toggleAttendance(
+                      e,
+                      dinner.id,
+                      userAttending(dinner.userIDs)
+                    )
                   }
-                  className="h-6 w-6 rounded-md bg-zinc-400 hover:bg-zinc-600"
+                  className="h-5 w-5 rounded-md bg-zinc-400 text-sm hover:bg-zinc-600 md:h-6 md:w-6 md:text-base"
                 >
                   {userAttending(dinner.userIDs) ? "-" : "+"}
                 </button>
@@ -130,20 +147,20 @@ export const WeekViewer: FC<weekViewerProps> = ({ data, users, session }) => {
         {data.map((dinner) => (
           <div
             key={dinner.id}
-            className="m-auto flex flex-row items-center gap-2 text-lg font-semibold text-zinc-100"
+            className="m-auto flex flex-row items-center gap-2 text-sm font-semibold tracking-tighter text-zinc-100 md:text-lg"
           >
-            {dinner.time}
-            {/* <TimePicker/> */}
+            {/* {dinner.time} */}
+            <TimePicker id={dinner.id} time={dinner.time}/>
           </div>
         ))}
         {data.map((dinner, key) => (
           <div className="flex flex-col items-center " key={key}>
-            <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-orange-600 text-xs font-semibold text-zinc-100">
+            <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-orange-600 text-sm font-semibold text-zinc-100 md:h-14 md:w-14 md:text-base">
               {nameFromId(dinner.cookUserId)}
             </div>
             <button
               type="button"
-              className="-my-4 h-6 w-6 rounded-md bg-zinc-400 hover:bg-zinc-600"
+              className="-my-3 h-5 w-5 rounded-md bg-zinc-400 text-sm hover:bg-zinc-600 md:h-6 md:w-6 md:text-base"
               onClick={(e) =>
                 toggleCooking(e, dinner.id, userCooking(dinner.cookUserId))
               }
