@@ -14,10 +14,12 @@ export default function Home() {
   };
 
   const utils = api.useContext();
-  const addMissingDates = api.dinner.addMissingDates.useMutation({
-    onSettled() {
+
+  const createDinner = api.dinner.createDinner.useMutation({
+    onError: (error) => console.log(error),
+    onSettled: () => {
       utils.dinner.getFortnight.invalidate();
-    },
+    }
   });
 
   const { data: users } = api.user.getAll.useQuery();
@@ -25,19 +27,27 @@ export default function Home() {
   const { data, isLoading } = api.dinner.getFortnight.useQuery();
 
   useEffect(() => {
-    // console.log(data)
+    // if there are fewer than fourteen days
     if (data && data.length < 14) {
-      // console.log(data);
-      // console.log(data.length);
-      const numMissing = 14 - data.length;
-      // if (data.length > 0) {
-      // console.log(data[data.length-1])
-      // }
-      const finalDate =
-        data.length > 0
-          ? data[data.length - 1]!.date
-          : new Date(Date.now() - 86400000);
-      addMissingDates.mutate({ finalDate, numMissing });
+      // check which dates are missing then create them before refetching
+      let expectedDates = [];
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      let time = today.getTime();
+      for (let i = 0; i < 14; i++) {
+        expectedDates.push(new Date(time));
+        time += 86400000;
+      }
+
+      const existingDates = data.map((e) => e.date.getTime());
+      const missingDates = expectedDates.filter(
+        (e) => !existingDates.includes(e.getTime())
+      );
+
+      for (let missingDate of missingDates) {
+        createDinner.mutate({ date: missingDate });
+      }
+
     } else if (data && data.length > 14) {
       alert("Duplicate data - tell Jonny!");
     }
@@ -96,21 +106,21 @@ export default function Home() {
             <div>
               {isFirstWeek ? (
                 <button
-                  className="rounded-lg bg-zinc-200 p-2 md:p-4 shadow-md hover:bg-zinc-400"
+                  className="rounded-lg bg-zinc-200 p-2 shadow-md hover:bg-zinc-400 md:p-4"
                   onClick={toggleIsFirstWeek}
                 >
                   Week 1
                 </button>
               ) : (
                 <button
-                  className="rounded-lg bg-zinc-400 p-2 md:p-4 shadow-md hover:bg-zinc-200 "
+                  className="rounded-lg bg-zinc-400 p-2 shadow-md hover:bg-zinc-200 md:p-4 "
                   onClick={toggleIsFirstWeek}
                 >
                   Week 2
                 </button>
               )}
             </div>
-            <div className="flex h-10 w-10 md:h-14 md:w-14 shrink-0 items-center justify-center rounded-full bg-orange-600 text-xl font-bold shadow-md">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-orange-600 text-xl font-bold shadow-md md:h-14 md:w-14">
               {session.user.name!.slice(0, 1)}
             </div>
           </div>

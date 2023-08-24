@@ -18,6 +18,7 @@ export const dinnerRouter = createTRPCRouter({
       include: {
         users: true,
       },
+      orderBy: {date: 'asc'}
     });
   }),
 
@@ -101,15 +102,12 @@ export const dinnerRouter = createTRPCRouter({
       });
     }),
 
-  addMissingDates: publicProcedure
-    .input(
-      z.object({
-        finalDate: z.date(),
-        numMissing: z.number(),
-      })
-    )
+
+  createDinner: protectedProcedure
+    .input(z.object({
+      date: z.date()
+    }))
     .mutation(async ({ ctx, input }) => {
-      console.log('made it')
       let days = [
         "Sunday",
         "Monday",
@@ -120,24 +118,19 @@ export const dinnerRouter = createTRPCRouter({
         "Saturday",
       ];
 
-      const nextDate = new Date();
-      nextDate.setUTCDate(input.finalDate.getUTCDate());
-      nextDate.setUTCHours(0,0,0,0)
-
-      for (let i = 0; i < input.numMissing; i++) {
-        nextDate.setUTCDate(nextDate.getUTCDate() + 1);
-        const dinner = await ctx.prisma.dinner.create({
-          data: {
-            date: nextDate,
-            name: days[nextDate.getDay()]!,
-            time: "19:00",
-          },
-        });
-        console.log('here', i)
-        console.log(dinner)
- 
-      }
-    }),
+      const dinner = await ctx.prisma.dinner.create({
+        data: {
+          date: input.date,
+          name: days[input.date.getDay()] || "",
+          time: "19:00",
+          users: {
+            connect: [{id: "64ce4d4083d54c44d8bd32fd"}, {id: "64ce81fd7c73efb3566dd57f"}]
+          }
+        }
+      })
+      console.log(`dinner created for date: ${input.date}`)
+      console.log(dinner)
+    }), 
 
   updateTime: publicProcedure
     .input(
